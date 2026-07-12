@@ -42,6 +42,9 @@ function Upload() {
       setErrorMessage("");
       setProgress(0);
 
+      // Remove any previously selected document
+      localStorage.removeItem("currentDocument");
+
       const formData = new FormData();
       formData.append("file", selectedFile);
 
@@ -59,11 +62,21 @@ function Upload() {
         },
       });
 
-      setSuccessMessage(response.data.message);
+      // Save uploaded document information
+      localStorage.setItem(
+        "currentDocument",
+        JSON.stringify(response.data.document)
+      );
+
+      setSuccessMessage(
+        `${response.data.document.filename} uploaded successfully.`
+      );
+
       setSelectedFile(null);
       setProgress(100);
 
       const input = document.getElementById("pdf-input");
+
       if (input) {
         input.value = "";
       }
@@ -86,7 +99,6 @@ function Upload() {
     <div className="min-h-screen bg-gradient-to-br from-slate-100 via-blue-50 to-indigo-100 p-6">
       <div className="max-w-3xl mx-auto">
         <div className="bg-white rounded-2xl shadow-lg p-8">
-
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
             Upload PDF
           </h1>
@@ -96,7 +108,6 @@ function Upload() {
           </p>
 
           <div className="border-2 border-dashed border-indigo-300 rounded-xl p-10 text-center bg-indigo-50">
-
             <input
               id="pdf-input"
               type="file"
@@ -151,7 +162,6 @@ function Upload() {
             >
               {uploading ? "Uploading..." : "Upload PDF"}
             </button>
-
           </div>
 
           <div className="flex justify-between mt-8">
@@ -169,7 +179,6 @@ function Upload() {
               Chat →
             </Link>
           </div>
-
         </div>
       </div>
     </div>
