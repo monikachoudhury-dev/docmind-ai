@@ -1,18 +1,16 @@
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
 from app.core.security import (
     create_access_token,
+    get_current_user,
     hash_password,
     verify_password,
 )
 from app.db.database import get_db
 from app.models.user import User
-from app.schemas.user import (
-    UserCreate,
-    UserLogin,
-    UserResponse,
-)
+from app.schemas.user import UserCreate, UserResponse
 
 router = APIRouter(
     prefix="/auth",
@@ -27,16 +25,11 @@ def auth_home():
     }
 
 
-@router.get("/test-db")
-def test_database(db: Session = Depends(get_db)):
-    return {
-        "message": "Database session created successfully."
-    }
-
-
 @router.post("/register", response_model=UserResponse)
-def register(user: UserCreate, db: Session = Depends(get_db)):
-
+def register(
+    user: UserCreate,
+    db: Session = Depends(get_db)
+):
     existing_user = db.query(User).filter(
         User.email == user.email
     ).first()
@@ -61,10 +54,12 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
 
 
 @router.post("/login")
-def login(user: UserLogin, db: Session = Depends(get_db)):
-
+def login(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    db: Session = Depends(get_db)
+):
     db_user = db.query(User).filter(
-        User.email == user.email
+        User.email == form_data.username
     ).first()
 
     if not db_user:
@@ -74,7 +69,7 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
         )
 
     if not verify_password(
-        user.password,
+        form_data.password,
         db_user.hashed_password
     ):
         raise HTTPException(
@@ -91,4 +86,16 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
     return {
         "access_token": access_token,
         "token_type": "bearer"
+    }
+
+
+@router.get("/me")
+def get_logged_in_user(
+    current_user: User = Depends(get_current_user)
+):
+    return {
+        "id": current_user.id,
+        "username": current_user.username,
+        "email": current_user.email,
+        "is_active": current_user.is_active,
     }

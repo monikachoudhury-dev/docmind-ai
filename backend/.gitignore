@@ -37,3 +37,12 @@ Thumbs.db
 # SQLite
 *.db
 *.sqlite3
+
+# Project Generated Files
+uploads/
+vectorstore/
+
+# Temporary Test Files
+test_models.py
+test_vector_store.py
+installed_packages.txt
