@@ -3,6 +3,8 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
+import Upload from "./pages/Upload";
+import Chat from "./pages/Chat";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -27,7 +29,7 @@ function App() {
         path="/upload"
         element={
           <ProtectedRoute>
-            <h1>Upload</h1>
+            <Upload />
           </ProtectedRoute>
         }
       />
@@ -36,7 +38,7 @@ function App() {
         path="/chat"
         element={
           <ProtectedRoute>
-            <h1>Chat</h1>
+            <Chat />
           </ProtectedRoute>
         }
       />
