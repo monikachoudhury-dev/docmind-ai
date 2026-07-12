@@ -63,5 +63,9 @@ async def upload_pdf(
     db.commit()
 
     return {
-        "message": "PDF uploaded successfully."
+        "message": "PDF uploaded successfully.",
+        "document": {
+            "id": document.id,
+            "filename": document.filename,
+        },
     }
