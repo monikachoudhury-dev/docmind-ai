@@ -1,3 +1,4 @@
+import MarkdownMessage from "../components/MarkdownMessage";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../api/api";
@@ -255,9 +256,16 @@ export default function Chat() {
 
               </div>
 
-              <div className="whitespace-pre-wrap">
-                {message.content}
-              </div>
+              <divclassName={`whitespace-pre-wrap ${
+                     message.role === "user" ? "text-white" : "text-gray-800"
+             }`} 
+            >
+  {message.role === "assistant" ? (
+    <MarkdownMessage content={message.content} />
+  ) : (
+    message.content
+  )}
+</div>
 
               <div className="flex justify-end mt-3">
 
