@@ -49,23 +49,17 @@ function Upload() {
       });
 
       // Save uploaded document for Chat page
-      localStorage.setItem(
-        "currentDocument",
-        JSON.stringify({
-          document_id:
-            response.data.document_id ??
-            response.data.id ??
-            response.data.document?.id,
-
-          filename:
-            response.data.filename ??
-            response.data.document?.filename ??
-            selectedFile.name,
-        })
-      );
+     localStorage.setItem(
+       "currentDocument",
+       JSON.stringify({
+          document_id: response.data.document.id,
+          filename: response.data.document.filename,
+       })
+    );
 
       navigate("/chat");
-    } catch (error) {
+    } 
+       catch (error) {
       console.error(error);
 
       const detail = error.response?.data?.detail;
@@ -83,7 +77,7 @@ function Upload() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-100 via-blue-50 to-indigo-100 p-6">
+    <div className="min-h-screen bg-linear-to-br from-slate-100 via-blue-50 to-indigo-100 p-6">
       <div className="max-w-2xl mx-auto">
 
         <div className="bg-white rounded-2xl shadow-lg p-8">
