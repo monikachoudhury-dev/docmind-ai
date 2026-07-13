@@ -256,10 +256,13 @@ export default function Chat() {
 
               </div>
 
-              <divclassName={`whitespace-pre-wrap ${
-                     message.role === "user" ? "text-white" : "text-gray-800"
-             }`} 
-            >
+              <div
+  className={`whitespace-pre-wrap ${
+    message.role === "user"
+      ? "text-white"
+      : "text-gray-800"
+  }`}
+>
   {message.role === "assistant" ? (
     <MarkdownMessage content={message.content} />
   ) : (
