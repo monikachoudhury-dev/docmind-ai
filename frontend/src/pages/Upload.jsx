@@ -1,53 +1,70 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../api/api";
 
-function Chat() {
+function Upload() {
   const navigate = useNavigate();
 
-  const currentDocument = useMemo(() => {
-    try {
-      return JSON.parse(localStorage.getItem("currentDocument"));
-    } catch {
-      return null;
-    }
-  }, []);
-
-  const documentId = currentDocument?.document_id;
-  const filename = currentDocument?.filename;
-
-  const [question, setQuestion] = useState("");
-  const [answer, setAnswer] = useState("");
+  const [selectedFile, setSelectedFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
-  const handleAsk = async (e) => {
-    e.preventDefault();
-
+  const handleFileChange = (e) => {
     setErrorMessage("");
-    setAnswer("");
 
-    if (!documentId) {
-      setErrorMessage("Please upload a PDF before starting a chat.");
+    if (!e.target.files || e.target.files.length === 0) {
       return;
     }
 
-    if (!question.trim()) {
-      setErrorMessage("Please enter a question.");
+    const file = e.target.files[0];
+
+    if (file.type !== "application/pdf") {
+      setErrorMessage("Please select a PDF file.");
+      return;
+    }
+
+    setSelectedFile(file);
+  };
+
+  const handleUpload = async (e) => {
+    e.preventDefault();
+
+    setErrorMessage("");
+
+    if (!selectedFile) {
+      setErrorMessage("Please select a PDF first.");
       return;
     }
 
     try {
       setLoading(true);
 
-      const response = await api.get("/chat", {
-        params: {
-          document_id: documentId,
-          question: question.trim(),
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+
+      const response = await api.post("/pdf/upload", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
         },
       });
 
-      setAnswer(response.data.answer);
+      // Save uploaded document for Chat page
+      localStorage.setItem(
+        "currentDocument",
+        JSON.stringify({
+          document_id:
+            response.data.document_id ??
+            response.data.id ??
+            response.data.document?.id,
+
+          filename:
+            response.data.filename ??
+            response.data.document?.filename ??
+            selectedFile.name,
+        })
+      );
+
+      navigate("/chat");
     } catch (error) {
       console.error(error);
 
@@ -58,93 +75,65 @@ function Chat() {
       } else if (Array.isArray(detail) && detail.length > 0) {
         setErrorMessage(detail[0].msg);
       } else {
-        setErrorMessage("Unable to get an answer. Please try again.");
+        setErrorMessage("Failed to upload PDF.");
       }
     } finally {
       setLoading(false);
     }
   };
 
-  const handleNewDocument = () => {
-    localStorage.removeItem("currentDocument");
-    navigate("/upload");
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-100 via-blue-50 to-indigo-100 p-6">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-2xl mx-auto">
 
         <div className="bg-white rounded-2xl shadow-lg p-8">
 
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            Chat with your PDF
+            Upload PDF
           </h1>
 
-          <p className="text-gray-600 mb-6">
-            Ask questions about your uploaded document using AI.
+          <p className="text-gray-600 mb-8">
+            Upload a PDF document to start chatting with AI.
           </p>
 
-          {documentId ? (
-            <div className="mb-6 rounded-lg border border-indigo-200 bg-indigo-50 p-4">
-              <p className="font-semibold text-indigo-700">
-                Current Document
-              </p>
+          <form onSubmit={handleUpload}>
 
-              <p className="text-gray-700 mt-1 break-all">
-                {filename}
-              </p>
-            </div>
-          ) : (
-            <div className="mb-6 rounded-lg border border-yellow-300 bg-yellow-50 p-4">
-              <p className="text-yellow-800 font-medium">
-                No document selected.
-              </p>
-
-              <p className="text-sm text-yellow-700 mt-1">
-                Please upload a PDF before asking questions.
-              </p>
-            </div>
-          )}
-
-          <form onSubmit={handleAsk}>
-
-            <textarea
-              rows={5}
-              value={question}
-              onChange={(e) => setQuestion(e.target.value)}
-              placeholder="Example: Summarize this document in simple words."
-              className="w-full border border-gray-300 rounded-lg p-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+            <input
+              type="file"
+              accept=".pdf"
+              onChange={handleFileChange}
+              className="block w-full border border-gray-300 rounded-lg p-3 cursor-pointer"
             />
+
+            {selectedFile && (
+              <div className="mt-4 rounded-lg bg-indigo-50 border border-indigo-200 p-3">
+                <p className="font-medium text-indigo-700">
+                  Selected File
+                </p>
+
+                <p className="text-gray-700 break-all">
+                  {selectedFile.name}
+                </p>
+              </div>
+            )}
+
+            {errorMessage && (
+              <div className="mt-4 rounded-lg border border-red-300 bg-red-100 p-4 text-red-700">
+                {errorMessage}
+              </div>
+            )}
 
             <button
               type="submit"
-              disabled={loading || !documentId}
-              className="mt-4 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white px-8 py-3 rounded-lg font-semibold transition"
+              disabled={loading}
+              className="mt-6 w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white py-3 rounded-lg font-semibold transition"
             >
-              {loading ? "Thinking..." : "Ask AI"}
+              {loading ? "Uploading..." : "Upload PDF"}
             </button>
 
           </form>
 
-          {errorMessage && (
-            <div className="mt-6 rounded-lg border border-red-300 bg-red-100 p-4 text-red-700">
-              {errorMessage}
-            </div>
-          )}
-
-          {answer && (
-            <div className="mt-8 rounded-xl border border-gray-200 bg-gray-50 p-6">
-              <h2 className="text-xl font-semibold mb-4">
-                AI Answer
-              </h2>
-
-              <div className="whitespace-pre-wrap text-gray-700 leading-7">
-                {answer}
-              </div>
-            </div>
-          )}
-
-          <div className="flex justify-between mt-10">
+          <div className="mt-8 flex justify-between">
 
             <Link
               to="/dashboard"
@@ -153,19 +142,20 @@ function Chat() {
               ← Dashboard
             </Link>
 
-            <button
-              onClick={handleNewDocument}
+            <Link
+              to="/chat"
               className="text-indigo-600 hover:underline"
             >
-              Upload Another PDF →
-            </button>
+              Go to Chat →
+            </Link>
 
           </div>
 
         </div>
+
       </div>
     </div>
   );
 }
 
-export default Chat;
+export default Upload;
