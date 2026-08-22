@@ -13,6 +13,9 @@ class Settings(BaseSettings):
     # Gemini API
     GOOGLE_API_KEY: str
 
+    # Security
+    SECRET_KEY: str
+
     # Storage
     UPLOAD_FOLDER: str = "uploads"
     VECTOR_STORE_PATH: str = "vectorstore"

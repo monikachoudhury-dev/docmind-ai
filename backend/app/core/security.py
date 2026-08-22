@@ -7,9 +7,10 @@ from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
+from app.core.config import settings
 from app.models.user import User
 
-SECRET_KEY = "your_super_secret_key_change_later"
+SECRET_KEY = settings.SECRET_KEY
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
