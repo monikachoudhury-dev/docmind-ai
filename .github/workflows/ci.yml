@@ -16,6 +16,16 @@ jobs:
       run:
         working-directory: backend
 
+    env:
+      APP_NAME: DocMind AI
+      APP_VERSION: "1.0.0"
+      APP_DESCRIPTION: "AI personal knowledge assistant"
+      DATABASE_URL: "sqlite://"
+      GOOGLE_API_KEY: "test-google-api-key"
+      SECRET_KEY: "test-secret-key-for-ci-only"
+      UPLOAD_FOLDER: "uploads"
+      VECTOR_STORE_PATH: "vectorstore"
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -31,12 +41,5 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run tests
-        env:
-          APP_NAME: DocMind AI
-          APP_VERSION: "1.0.0"
-          APP_DESCRIPTION: Test environment for DocMind AI
-          DATABASE_URL: sqlite:///test.db
-          GOOGLE_API_KEY: test-google-api-key
-          SECRET_KEY: test-secret-key-for-ci-only
         run: |
           python -m pytest -v
